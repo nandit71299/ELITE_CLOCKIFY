@@ -1,0 +1,111 @@
+/* ProjectPicker.module.css */
+
+/* Client Box */
+.clientBox {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.clientName {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Projects List */
+.projectsList {
+  top: 0;
+  left: -100%;
+  display: none;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 8px;
+  z-index: 1;
+}
+
+/* Project Item */
+.projectItem {
+  cursor: pointer;
+  position: relative;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.projectItem:hover {
+  background-color: #f1f1f1;
+}
+
+/* Task Groups List */
+.taskGroupsList {
+  top: 0;
+  left: -100%;
+  display: none;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 8px;
+  z-index: 1;
+}
+
+/* Task Group Item */
+.taskGroupItem {
+  cursor: pointer;
+  position: relative;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.taskGroupItem:hover {
+  background-color: #f1f1f1;
+}
+
+/* Tasks List */
+.tasksList {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  display: none;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 8px;
+  z-index: 1;
+}
+
+/* Task Item */
+.taskItem {
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.taskItem:hover {
+  background-color: #e6e6e6;
+}
+
+/* Plus Button */
+.plusButton {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.plusButton:hover {
+  background-color: #e0e0e0;
+}
+
+.plusIcon {
+  color: #007bff;
+}
