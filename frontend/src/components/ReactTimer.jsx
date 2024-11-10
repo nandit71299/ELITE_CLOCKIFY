@@ -27,7 +27,6 @@ const Timer = ({ selectedTask, setStartTime, setEndTime }) => {
         setHasStarted(true);
         setIsRunning(true);
         console.log("Timer started");
-        console.log("isRunning:", isRunning);
       } else {
         alert("Failed to start timer. Please try again.");
       }
@@ -51,36 +50,79 @@ const Timer = ({ selectedTask, setStartTime, setEndTime }) => {
   const formatTime = (num) => num.toString().padStart(2, "0");
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <h3>Task: {selectedTask?.taskTitle}</h3>
-      <div style={{ fontSize: "100px" }}>
-        <span>{formatTime(hours)}</span>:<span>{formatTime(minutes)}</span>:
-        <span>{formatTime(seconds)}</span>:
-        <span>{formatTime(Math.floor(milliseconds / 10))}</span>
-      </div>
+    <div
+      style={{
+        textAlign: "center",
+        maxHeight: "300px",
+        height: "300px",
+        alignItems: "center",
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        position: "relative", // Ensure the parent is positioned relative
+        cursor: selectedTask ? "pointer" : "not-allowed",
+        opacity: 0.8,
+      }}
+    >
+      {/* Overlay message on top of the blurred area */}
+      {!selectedTask && (
+        <div
+          style={{
+            position: "absolute", // Position it absolutely within the parent
+            zIndex: 2, // Higher zIndex to ensure it stays on top of the blur
+            fontSize: "18px", // Adjust the font size as needed
+            top: "50%", // Center vertically
+            transform: "translateY(-50%)", // Adjust for perfect centering
+            width: "100%",
+            textAlign: "center",
+            color: "black",
+          }}
+        >
+          Please select a task to start the timer.
+        </div>
+      )}
 
-      <div style={{ marginTop: "20px" }}>
-        {!isRunning ? (
-          <button onClick={handleStart} className="bg-primary btn">
-            Start
-          </button>
-        ) : (
-          <button onClick={handleStop} className="bg-danger btn">
-            Stop
-          </button>
-        )}
+      {/* Blur effect applied only to the timer content with animation */}
+      <div
+        style={{
+          filter: selectedTask ? "none" : "blur(20px)",
+          pointerEvents: selectedTask ? "auto" : "none",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          zIndex: 1, // Ensure the content below the message has a lower z-index
+          transition: "filter 0.6s ease-in-out", // Add transition for the blur effect
+        }}
+      >
+        <h3>Task: {selectedTask?.taskTitle}</h3>
+        <div style={{ fontSize: "100px" }}>
+          <span>{formatTime(hours)}</span>:<span>{formatTime(minutes)}</span>:
+          <span>{formatTime(seconds)}</span>:
+          <span>{formatTime(Math.floor(milliseconds / 10))}</span>
+        </div>
+
+        <div style={{ marginTop: "20px" }}>
+          {!isRunning ? (
+            <button
+              onClick={handleStart}
+              className="bg-primary btn"
+              disabled={isRunning || !selectedTask}
+            >
+              Start
+            </button>
+          ) : (
+            <button
+              onClick={handleStop}
+              className="bg-danger btn"
+              disabled={!isRunning || !selectedTask}
+            >
+              Stop
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default Timer;
-
-// const handleStart = () => {
-//   if (!hasStarted) {
-//     // Set the start time when starting the timer
-//     setStartTime(new Date());
-//     setHasStarted(true);
-//   }
-//   setIsRunning(true);
-// };

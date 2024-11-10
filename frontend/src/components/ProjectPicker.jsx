@@ -149,7 +149,7 @@ function ProjectPicker({
 
   return (
     <div
-      style={{ minWidth: "25vw", maxWidth: "100%" }}
+      style={{ minWidth: "25vw", maxWidth: "100%", zIndex: "4" }}
       className="w-100 position-absolute end-50 shadow-sm rounded rounded-2 bg-white"
     >
       <div>

@@ -2,7 +2,19 @@ import React, { useState, useEffect } from "react";
 import apiUtil from "../utils/apiUtil";
 import TimeTrackerRecorder from "../components/TimeTrackerRecorder";
 import Timer from "../components/ReactTimer";
-import ProjectPicker from "../components/ProjectPicker";
+import { Link } from "react-router-dom";
+import { Layout, Menu, Button } from "antd";
+import { calculateDuration } from "../utils/timeUtils";
+
+import {
+  DashboardOutlined,
+  UnorderedListOutlined,
+  ClockCircleOutlined,
+  ProjectOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+
+const { Sider, Content } = Layout;
 
 function Dashboard() {
   const [clients, setClients] = useState([]);
@@ -16,6 +28,8 @@ function Dashboard() {
   const [endDateFilter, setEndDateFilter] = useState("");
   const [minDurationFilter, setMinDurationFilter] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
+
+  const [collapsed, setCollapsed] = useState(false); // Sidebar collapse state
 
   useEffect(() => {
     const getClients = async () => {
@@ -161,18 +175,6 @@ function Dashboard() {
     }));
   };
 
-  const calculateDuration = (startTime, endTime) => {
-    const duration = new Date(endTime) - new Date(startTime);
-    const hours = Math.floor(duration / (1000 * 60 * 60));
-    const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((duration % (1000 * 60)) / 1000);
-
-    return {
-      duration: `${hours} hours, ${minutes} minutes, ${seconds} seconds`,
-      totalSeconds: Math.floor(duration / 1000),
-    };
-  };
-
   const tasksWithTimeData = [];
 
   clients.forEach((client) => {
@@ -235,119 +237,159 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <TimeTrackerRecorder
-        clientsData={clients}
-        selectedClient={selectedClient}
-        setSelectedClient={setSelectedClient}
-        selectedTask={selectedTask}
-        selectTask={selectTask}
-        setSelectedTask={setSelectedTask}
-        selectedProject={selectedProject}
-        setSelectedProject={setSelectedProject}
-        selectedTaskGroup={selectedTaskGroup}
-        setSelectedTaskGroup={setSelectedTaskGroup}
-      />
-      {selectedTask ? (
-        <Timer
-          key={selectedTask.id}
-          selectedTask={selectedTask}
-          setStartTime={setStartTime}
-          setEndTime={setEndTime}
-        />
-      ) : (
-        ""
-      )}
-      <div className="filters d-flex gap-2 justify-content-center m-4">
-        <div>
-          <label>
-            Start Date:
-            <input
-              className="form-control"
-              type="date"
-              name="startDate"
-              value={startDateFilter}
-              onChange={handleFilterChange}
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Sider
+        theme={"light"}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+      >
+        <div
+          className="logo-container"
+          style={{ padding: collapsed ? "5px" : "16px", textAlign: "center" }}
+        >
+          {collapsed ? <h6>Clockify</h6> : <h2>Clockify</h2>}
+        </div>
+
+        <Menu theme="light" mode="inline" defaultSelectedKeys={["1"]}>
+          <Menu.Item key="1" icon={<DashboardOutlined />}>
+            Dashboard
+          </Menu.Item>
+          <Menu.Item key="2" icon={<UnorderedListOutlined />}>
+            <Link to={`/viewClients`}>Clients</Link>
+          </Menu.Item>
+          <Menu.Item key="3" icon={<ProjectOutlined />}>
+            <Link to={`/viewTaskGroup`}>Task Groups</Link>
+          </Menu.Item>
+          <Menu.Item key="4" icon={<FileTextOutlined />}>
+            <Link to={`/viewTasks`}>Tasks</Link>
+          </Menu.Item>
+          <Menu.Item key="5" icon={<ClockCircleOutlined />}>
+            <Link to={`/viewTimerData`}>Timer Data</Link>
+          </Menu.Item>
+        </Menu>
+      </Sider>
+
+      {/* Main content */}
+      <Layout>
+        <Content>
+          <div style={{ padding: "10px 50px 0px 50px", minHeight: 360 }}>
+            <h1>DASHBOARD</h1>
+
+            <TimeTrackerRecorder
+              clientsData={clients}
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+              selectedTask={selectedTask}
+              selectTask={selectTask}
+              setSelectedTask={setSelectedTask}
+              selectedProject={selectedProject}
+              setSelectedProject={setSelectedProject}
+              selectedTaskGroup={selectedTaskGroup}
+              setSelectedTaskGroup={setSelectedTaskGroup}
             />
-          </label>
-        </div>
-        <div>
-          <label>
-            End Date:
-            <input
-              className="form-control"
-              type="date"
-              name="endDate"
-              value={endDateFilter}
-              onChange={handleFilterChange}
+
+            <Timer
+              selectedTask={selectedTask}
+              setStartTime={setStartTime}
+              setEndTime={setEndTime}
             />
-          </label>
-        </div>
-        <div>
-          <label>
-            Minimum Duration (seconds):
-            <input
-              className="form-control"
-              type="number"
-              name="minDuration"
-              value={minDurationFilter}
-              onChange={handleFilterChange}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Sort by Duration:
-            <select
-              className="form-control"
-              name="sortOrder"
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
-          </label>
-        </div>
-      </div>
-      <div>
-        <h3>Tasks with Time Data</h3>
-        {sortedTasks.length > 0 ? (
-          <ul>
-            {sortedTasks.map((task, index) => (
-              <li key={index}>
-                <div className="d-flex gap-4">
-                  <div>
-                    <strong>Client:</strong> {task.clientName} {" -> "}
-                  </div>
-                  <div>
-                    <strong>Project:</strong> {task.projectName} {" -> "}
-                  </div>
-                  <div>
-                    <strong>Task Group:</strong> {task.taskGroupName} {" -> "}
-                  </div>
-                  <div>
-                    <strong>Task Name:</strong> {task.taskTitle}
-                  </div>
-                </div>
-                <div>
-                  <strong>Start Time:</strong> {task.startTime}
-                </div>
-                <div>
-                  <strong>End Time:</strong> {task.endTime}
-                </div>
-                <div>
-                  <strong>Duration:</strong> {task.duration}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No tasks with start and end times matching the filters.</p>
-        )}
-      </div>
-    </div>
+
+            <div className="filters d-flex gap-2 justify-content-center m-4">
+              <div>
+                <label>
+                  Start Date:
+                  <input
+                    className="form-control"
+                    type="date"
+                    name="startDate"
+                    value={startDateFilter}
+                    onChange={handleFilterChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  End Date:
+                  <input
+                    className="form-control"
+                    type="date"
+                    name="endDate"
+                    value={endDateFilter}
+                    onChange={handleFilterChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Minimum Duration (seconds):
+                  <input
+                    className="form-control"
+                    type="number"
+                    name="minDuration"
+                    value={minDurationFilter}
+                    onChange={handleFilterChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Sort by Duration:
+                  <select
+                    className="form-control"
+                    name="sortOrder"
+                    value={sortOrder}
+                    onChange={handleSortOrderChange}
+                  >
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h3>Tasks with Time Data</h3>
+              {sortedTasks.length > 0 ? (
+                <ul>
+                  {sortedTasks.map((task, index) => (
+                    <li key={index}>
+                      <div className="d-flex gap-4">
+                        <div>
+                          <strong>Client:</strong> {task.clientName} {" -> "}
+                        </div>
+                        <div>
+                          <strong>Project:</strong> {task.projectName} {" -> "}
+                        </div>
+                        <div>
+                          <strong>Task Group:</strong> {task.taskGroupName}{" "}
+                          {" -> "}
+                        </div>
+                        <div>
+                          <strong>Task Name:</strong> {task.taskTitle}
+                        </div>
+                      </div>
+                      <div>
+                        <strong>Start Time:</strong> {task.startTime}
+                      </div>
+                      <div>
+                        <strong>End Time:</strong> {task.endTime}
+                      </div>
+                      <div>
+                        <strong>Duration:</strong> {task.duration}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No tasks with start and end times matching the filters.</p>
+              )}
+            </div>
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
 
