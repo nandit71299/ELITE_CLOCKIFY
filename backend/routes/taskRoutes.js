@@ -12,5 +12,9 @@ router.post("/createTask", taskController.createTask);
 router.post("/createTaskGroup", taskController.createTaskGroup);
 router.post("/startTimer", taskController.startTimer);
 router.post("/endTimer", taskController.endTimer);
+router.post("/deleteTasks", taskController.deleteTasks);
+router.post("/deleteClients", taskController.deleteClients);
+router.post("/deleteTaskGroups", taskController.deleteTaskGroups);
+router.post("/deleteTimers", taskController.deleteTimers);
 
 export default router;
