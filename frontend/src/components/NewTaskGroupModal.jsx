@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 // Modal Component
-function TaskGroupModal({ isOpen, onClose, onSave, projectId }) {
+function TaskGroupModal({ isOpen, onClose, onSave }) {
   const [groupName, setGroupName] = useState("");
 
   // Handle form submission (save new task group)

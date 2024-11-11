@@ -82,19 +82,6 @@ export const fetchClientProjects = async (clientId) => {
   }
 };
 
-// Delete a task by taskId
-export const deleteTask = async (clientId, projectId, taskId) => {
-  try {
-    const response = await api.delete("/deleteTask", {
-      data: { clientId, projectId, taskId },
-    });
-    return response.data; // Return the response after deletion
-  } catch (error) {
-    console.error("Error deleting task:", error);
-    throw error;
-  }
-};
-
 // Delete a project by projectId
 export const deleteProject = async (clientId, projectId) => {
   try {
@@ -173,16 +160,69 @@ export const createTaskGroup = async (
   }
 };
 
+export const deleteTasks = async (
+  clientId,
+  projectId,
+  taskGroupId,
+  taskIds
+) => {
+  try {
+    const response = await api.post("/deleteTasks", {
+      clientId,
+      projectId,
+      taskGroupId,
+      taskIds,
+    });
+    return response.data; // Assuming the response contains the client data (including ID)
+  } catch (error) {
+    console.log("Error deleting tasks:", error);
+    throw error;
+  }
+};
+
+export const deleteClients = async (clientIds) => {
+  try {
+    const response = await api.post("/deleteClients", { clientIds });
+    return response.data; // Assuming the response contains the client data (including ID)
+  } catch (error) {
+    console.error("Error deleting clients:", error);
+    throw error;
+  }
+};
+
+export const deleteTaskGroups = async (taskGroupIds) => {
+  try {
+    const response = await api.post("/deleteTaskGroups", { taskGroupIds });
+    return response.data; // Assuming the response contains the client data (including ID)
+  } catch (error) {
+    console.error("Error deleting task groups:", error);
+    throw error;
+  }
+};
+
+export const deleteTimers = async (timerIds) => {
+  try {
+    const response = await api.post("/deleteTimers", { timerIds });
+    return response.data; // Assuming the response contains the client data (including ID)
+  } catch (error) {
+    console.error("Error deleting timers:", error);
+    throw error;
+  }
+};
+
 export default {
   fetchAllClients,
   createClient,
+  deleteClients,
   createProject,
+  deleteTaskGroups,
   createTask,
   fetchClientById,
   fetchClientProjects,
-  deleteTask,
+  deleteTasks,
   deleteProject,
   startTimer,
   endTimer,
+  deleteTimers,
   createTaskGroup,
 };

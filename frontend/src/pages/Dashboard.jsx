@@ -1,11 +1,4 @@
 import React, { useState, useEffect } from "react";
-import apiUtil from "../utils/apiUtil";
-import TimeTrackerRecorder from "../components/TimeTrackerRecorder";
-import Timer from "../components/ReactTimer";
-import { Link } from "react-router-dom";
-import { Layout, Menu, Button } from "antd";
-import { calculateDuration } from "../utils/timeUtils";
-
 import {
   DashboardOutlined,
   UnorderedListOutlined,
@@ -13,22 +6,48 @@ import {
   ProjectOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
+import moment from "moment";
+import { Link } from "react-router-dom";
+import { Layout, Menu, Button } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+
+// DEV'S
+import apiUtil from "../utils/apiUtil";
+import TimeTrackerRecorder from "../components/TimeTrackerRecorder";
+import Timer from "../components/ReactTimer";
+import { calculateDuration } from "../utils/timeUtils";
+
+// ACTIONS
+import { setClients } from "../redux/clientSlice"; // Import the setClients action
+import {
+  setSelectedClient,
+  setSelectedProject,
+  setSelectedTaskGroup,
+  setSelectedTask,
+} from "../redux/projectSlice"; // Import the project actions
+import {
+  setStartDate,
+  setEndDate,
+  setMinDuration,
+  setSortOrder,
+} from "../redux/filterSlice"; // Import the filter actions
 
 const { Sider, Content } = Layout;
 
 function Dashboard() {
-  const [clients, setClients] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [selectedTaskGroup, setSelectedTaskGroup] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const dispatch = useDispatch();
+
+  // Redux state (clients and selected entities)
+  const clients = useSelector((state) => state.clients);
+  const { selectedClient, selectedProject, selectedTaskGroup, selectedTask } =
+    useSelector((state) => state.project);
+
+  // Access filter state from Redux store
+  const { startDate, endDate, minDuration, sortOrder } = useSelector(
+    (state) => state.filters
+  );
+
   const [timerId, setTimerId] = useState(null);
-
-  const [startDateFilter, setStartDateFilter] = useState("");
-  const [endDateFilter, setEndDateFilter] = useState("");
-  const [minDurationFilter, setMinDurationFilter] = useState(0);
-  const [sortOrder, setSortOrder] = useState("asc");
-
   const [collapsed, setCollapsed] = useState(false); // Sidebar collapse state
 
   useEffect(() => {
@@ -36,7 +55,7 @@ function Dashboard() {
       try {
         const clientData = await apiUtil.fetchAllClients();
         if (clientData.success) {
-          setClients(clientData.clients);
+          dispatch(setClients(clientData.clients));
         } else {
           console.error("Error fetching clients:", clientData.message);
         }
@@ -45,13 +64,23 @@ function Dashboard() {
       }
     };
     getClients();
-  }, []);
+  }, [dispatch]); // Make sure to include dispatch in the dependency array
 
   const selectTask = (task) => {
-    setSelectedTask(task);
+    dispatch(setSelectedTask(task));
   };
 
+  // Function to handle start time
   const setStartTime = async (time) => {
+    if (
+      !selectedClient ||
+      !selectedProject ||
+      !selectedTaskGroup ||
+      !selectedTask
+    ) {
+      return false;
+    }
+
     try {
       const response = await apiUtil.startTimer(
         selectedClient.id,
@@ -62,55 +91,49 @@ function Dashboard() {
 
       if (response.success) {
         setTimerId(response.timer.id);
-        setSelectedTask((prevTask) => {
-          const updatedTask = {
-            ...prevTask,
-            timers: [
-              ...prevTask.timers,
-              { startTime: time, endTime: null, id: response.timer.id },
-            ],
-          };
 
-          const updatedClients = clients.map((client) => {
-            if (client.id === selectedClient.id) {
-              return {
-                ...client,
-                projects: client.projects.map((project) => {
-                  if (project.id === selectedProject.id) {
-                    return {
-                      ...project,
-                      taskGroups: project.taskGroups.map((taskGroup) => {
-                        if (taskGroup.id === selectedTaskGroup.id) {
-                          return {
-                            ...taskGroup,
-                            tasks: taskGroup.tasks.map((task) => {
-                              if (task.id === selectedTask.id) {
-                                return {
-                                  ...task,
-                                  timers: [
-                                    ...task.timers,
-                                    { startTime: time, endTime: null },
-                                  ],
-                                };
-                              }
-                              return task;
-                            }),
-                          };
-                        }
-                        return taskGroup;
-                      }),
-                    };
-                  }
-                  return project;
-                }),
-              };
-            }
-            return client;
-          });
+        // Create an updated task with the new timer
+        const updatedTask = {
+          ...selectedTask,
+          timers: [
+            ...selectedTask.timers,
+            { startTime: time, endTime: null, id: response.timer.id },
+          ],
+        };
 
-          setClients(updatedClients);
-          return updatedTask;
+        const updatedClients = clients.map((client) => {
+          if (client.id === selectedClient.id) {
+            return {
+              ...client,
+              projects: client.projects.map((project) => {
+                if (project.id === selectedProject.id) {
+                  return {
+                    ...project,
+                    taskGroups: project.taskGroups.map((taskGroup) => {
+                      if (taskGroup.id === selectedTaskGroup.id) {
+                        return {
+                          ...taskGroup,
+                          tasks: taskGroup.tasks.map((task) => {
+                            if (task.id === selectedTask.id) {
+                              return updatedTask; // Replace the task with the updated task
+                            }
+                            return task;
+                          }),
+                        };
+                      }
+                      return taskGroup;
+                    }),
+                  };
+                }
+                return project;
+              }),
+            };
+          }
+          return client;
         });
+
+        dispatch(setSelectedTask(updatedTask));
+        dispatch(setClients(updatedClients));
 
         return true;
       } else {
@@ -122,7 +145,17 @@ function Dashboard() {
     }
   };
 
+  // Function to handle end time
   const setEndTime = async (time) => {
+    if (
+      !selectedClient ||
+      !selectedProject ||
+      !selectedTaskGroup ||
+      !selectedTask
+    ) {
+      return false;
+    }
+
     try {
       const response = await apiUtil.endTimer(
         selectedClient.id,
@@ -133,20 +166,19 @@ function Dashboard() {
       );
 
       if (response.success) {
-        setSelectedTask((prevTask) => {
-          const updatedTask = {
-            ...prevTask,
-            timers: prevTask.timers.map((timer) =>
-              timer.id === timerId && timer.endTime === null
-                ? { ...timer, endTime: time }
-                : timer
-            ),
-          };
+        const updatedTask = {
+          ...selectedTask,
+          timers: selectedTask.timers.map((timer) =>
+            timer.id === timerId && timer.endTime === null
+              ? { ...timer, endTime: time }
+              : timer
+          ),
+        };
 
-          const updatedClients = updateClientsWithTask(updatedTask);
-          setClients(updatedClients);
-          return updatedTask;
-        });
+        const updatedClients = updateClientsWithTask(updatedTask);
+
+        dispatch(setClients(updatedClients));
+        dispatch(setSelectedTask(updatedTask));
 
         return true;
       } else {
@@ -188,13 +220,30 @@ function Dashboard() {
                 timer.endTime
               );
 
+              // Convert the task's start and end time to Moment objects (removes the time part)
+              const taskStartDate = moment(timer.startTime).format(
+                "YYYY-MM-DD"
+              ); // Only the date part
+              const taskEndDate = moment(timer.endTime).format("YYYY-MM-DD"); // Only the date part
+
+              // Convert the filter start and end dates to Moment objects (removes the time part)
+              const filterStartDate = startDate
+                ? moment(startDate).format("YYYY-MM-DD")
+                : null;
+              const filterEndDate = endDate
+                ? moment(endDate).format("YYYY-MM-DD")
+                : null;
+
+              // Exact date comparisons
               const meetsStartDateFilter =
-                !startDateFilter ||
-                new Date(timer.startTime) >= new Date(startDateFilter);
+                !filterStartDate || taskStartDate === filterStartDate;
               const meetsEndDateFilter =
-                !endDateFilter ||
-                new Date(timer.endTime) <= new Date(endDateFilter);
-              const meetsMinDurationFilter = totalSeconds >= minDurationFilter;
+                !filterEndDate ||
+                moment(taskEndDate).isSameOrBefore(
+                  moment(filterEndDate).endOf("day"),
+                  "day"
+                );
+              const meetsMinDurationFilter = totalSeconds >= minDuration;
 
               if (
                 meetsStartDateFilter &&
@@ -206,8 +255,10 @@ function Dashboard() {
                   projectName: project.projectTitle,
                   taskGroupName: taskGroup.groupName,
                   taskTitle: task.taskTitle,
-                  startTime: new Date(timer.startTime).toLocaleString(),
-                  endTime: new Date(timer.endTime).toLocaleString(),
+                  startTime: moment(timer.startTime).format(
+                    "YYYY-MM-DD HH:mm:ss"
+                  ),
+                  endTime: moment(timer.endTime).format("YYYY-MM-DD HH:mm:ss"),
                   duration: duration,
                   totalSeconds: totalSeconds,
                 });
@@ -220,20 +271,31 @@ function Dashboard() {
   });
 
   const sortedTasks = tasksWithTimeData.sort((a, b) => {
-    return sortOrder === "asc"
-      ? a.totalSeconds - b.totalSeconds
-      : b.totalSeconds - a.totalSeconds;
+    if (sortOrder === "asc") {
+      return sortOrder === "duration"
+        ? a.totalSeconds - b.totalSeconds
+        : moment(a.startTime).isBefore(b.startTime)
+        ? -1
+        : 1;
+    } else {
+      return sortOrder === "duration"
+        ? b.totalSeconds - a.totalSeconds
+        : moment(b.startTime).isBefore(a.startTime)
+        ? -1
+        : 1;
+    }
   });
 
+  // Dispatch filter updates
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    if (name === "startDate") setStartDateFilter(value);
-    if (name === "endDate") setEndDateFilter(value);
-    if (name === "minDuration") setMinDurationFilter(Number(value));
+    if (name === "startDate") dispatch(setStartDate(value));
+    if (name === "endDate") dispatch(setEndDate(value));
+    if (name === "minDuration") dispatch(setMinDuration(Number(value)));
   };
 
   const handleSortOrderChange = (e) => {
-    setSortOrder(e.target.value);
+    dispatch(setSortOrder(e.target.value));
   };
 
   return (
@@ -257,16 +319,16 @@ function Dashboard() {
             Dashboard
           </Menu.Item>
           <Menu.Item key="2" icon={<UnorderedListOutlined />}>
-            <Link to={`/viewClients`}>Clients</Link>
+            <Link to="/viewClients">Clients</Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<ProjectOutlined />}>
-            <Link to={`/viewTaskGroup`}>Task Groups</Link>
+            <Link to="/viewTaskGroup">Task Groups</Link>
           </Menu.Item>
           <Menu.Item key="4" icon={<FileTextOutlined />}>
-            <Link to={`/viewTasks`}>Tasks</Link>
+            <Link to="/viewTasks">Tasks</Link>
           </Menu.Item>
           <Menu.Item key="5" icon={<ClockCircleOutlined />}>
-            <Link to={`/viewTimerData`}>Timer Data</Link>
+            <Link to="/viewTimerData">Timer Data</Link>
           </Menu.Item>
         </Menu>
       </Sider>
@@ -280,14 +342,20 @@ function Dashboard() {
             <TimeTrackerRecorder
               clientsData={clients}
               selectedClient={selectedClient}
-              setSelectedClient={setSelectedClient}
+              setSelectedClient={(client) =>
+                dispatch(setSelectedClient(client))
+              }
               selectedTask={selectedTask}
               selectTask={selectTask}
-              setSelectedTask={setSelectedTask}
+              setSelectedTask={(task) => dispatch(setSelectedTask(task))}
               selectedProject={selectedProject}
-              setSelectedProject={setSelectedProject}
+              setSelectedProject={(project) =>
+                dispatch(setSelectedProject(project))
+              }
               selectedTaskGroup={selectedTaskGroup}
-              setSelectedTaskGroup={setSelectedTaskGroup}
+              setSelectedTaskGroup={(taskGroup) =>
+                dispatch(setSelectedTaskGroup(taskGroup))
+              }
             />
 
             <Timer
@@ -304,7 +372,7 @@ function Dashboard() {
                     className="form-control"
                     type="date"
                     name="startDate"
-                    value={startDateFilter}
+                    value={startDate}
                     onChange={handleFilterChange}
                   />
                 </label>
@@ -316,7 +384,7 @@ function Dashboard() {
                     className="form-control"
                     type="date"
                     name="endDate"
-                    value={endDateFilter}
+                    value={endDate}
                     onChange={handleFilterChange}
                   />
                 </label>
@@ -328,22 +396,23 @@ function Dashboard() {
                     className="form-control"
                     type="number"
                     name="minDuration"
-                    value={minDurationFilter}
+                    value={minDuration}
                     onChange={handleFilterChange}
                   />
                 </label>
               </div>
               <div>
                 <label>
-                  Sort by Duration:
+                  Sort by:
                   <select
                     className="form-control"
                     name="sortOrder"
                     value={sortOrder}
                     onChange={handleSortOrderChange}
                   >
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
+                    <option value="asc">Date Started (Ascending)</option>
+                    <option value="desc">Date Started (Descending)</option>
+                    <option value="duration">Duration</option>
                   </select>
                 </label>
               </div>

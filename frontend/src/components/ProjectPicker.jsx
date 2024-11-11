@@ -9,8 +9,6 @@ function ProjectPicker({
   clientsData,
   selectedClient,
   setSelectedClient,
-  selectedTask,
-  setSelectedTask,
   selectedProject,
   setSelectedProject,
   selectedTaskGroup,
@@ -89,6 +87,7 @@ function ProjectPicker({
 
           setClients(updatedClients); // Update clients state
           setShowTaskModal(false); // Close the task modal
+          window.location.reload();
         }
       } catch (error) {
         console.error("Error saving task:", error);

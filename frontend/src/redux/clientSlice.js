@@ -1,18 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { clientsData } from "../data";
 
-const clientsSlice = createSlice({
+const clientSlice = createSlice({
   name: "clients",
-  initialState: clientsData,
+  initialState: [],
   reducers: {
-    setClients: (state, action) => {
-      return action.payload;
-    },
-    updateClients: (state, action) => {
-      return action.payload;
-    },
+    setClients: (state, action) => action.payload,
   },
 });
 
-export const { setClients, updateClients } = clientsSlice.actions;
-export default clientsSlice.reducer;
+export const { setClients } = clientSlice.actions;
+export default clientSlice.reducer;

@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import apiUtil from "../utils/apiUtil";
+import { setClients } from "../redux/clientSlice"; // Import the setClients action
 
-function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
+function ProjectModal({ isOpen, onClose }) {
+  const dispatch = useDispatch();
+
+  // Access clientsData from Redux
+  const clientsData = useSelector((state) => state.clients);
+
   const [projectTitle, setProjectTitle] = useState("");
   const [projectColor, setProjectColor] = useState("#FFFFFF");
   const [selectedClient, setSelectedClient] = useState("");
@@ -14,6 +21,7 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
 
     let clientId = selectedClient;
 
+    // Create new client if "Add New Client" is selected
     if (newClientName.length > 0) {
       try {
         const response = await apiUtil.createClient(newClientName);
@@ -30,6 +38,7 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
     }
 
     try {
+      // Create new project using the clientId
       const newProject = await apiUtil.createProject(clientId, projectTitle);
 
       if (!newProject) {
@@ -38,6 +47,7 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
 
       let updatedClients = [...clientsData];
 
+      // Update existing client with the new project
       if (selectedClient && selectedClient !== "new-client") {
         updatedClients = updatedClients.map((client) => {
           if (client.id === Number(clientId)) {
@@ -49,6 +59,7 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
           return client;
         });
       } else {
+        // Add a new client if needed
         const newClient = {
           id: clientId,
           name: newClientName,
@@ -57,15 +68,17 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
         updatedClients = [...updatedClients, newClient];
       }
 
+      // Reset form fields and close modal
       setProjectTitle("");
       setNewClientName("");
       setProjectColor("#FFFFFF");
       setSelectedClient("");
       onClose();
-      setClients(updatedClients);
+
+      // Dispatch the updated clients list to Redux
+      dispatch(setClients(updatedClients));
     } catch (error) {
       console.error("Error creating project:", error);
-      return;
     }
   };
 
@@ -98,13 +111,11 @@ function ProjectModal({ isOpen, onClose, setClients, clientsData }) {
             className="form-control"
           >
             <option value="">Select Client</option>
-            {clientsData.map((client) => {
-              return (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              );
-            })}
+            {clientsData.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.name}
+              </option>
+            ))}
             <option value="new-client">Add New Client</option>
           </select>
           {selectedClient === "new-client" && (

@@ -6,7 +6,6 @@ const Timer = ({ selectedTask, setStartTime, setEndTime }) => {
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    console.log("isRunning:", isRunning);
     let intervalId;
     if (isRunning) {
       intervalId = setInterval(() => setTime((prevTime) => prevTime + 10), 10);
@@ -22,11 +21,9 @@ const Timer = ({ selectedTask, setStartTime, setEndTime }) => {
   const handleStart = async () => {
     if (!hasStarted) {
       const result = await setStartTime(new Date());
-      console.log("API result:", result);
       if (result) {
         setHasStarted(true);
         setIsRunning(true);
-        console.log("Timer started");
       } else {
         alert("Failed to start timer. Please try again.");
       }
@@ -40,7 +37,6 @@ const Timer = ({ selectedTask, setStartTime, setEndTime }) => {
         setIsRunning(false);
         setTime(0);
         setHasStarted(false);
-        console.log("Timer stopped");
       } else {
         console.log("Failed to stop timer. Please try again.");
       }
