@@ -337,26 +337,31 @@ function Dashboard() {
       <Layout>
         <Content>
           <div style={{ padding: "10px 50px 0px 50px", minHeight: 360 }}>
-            <h1>DASHBOARD</h1>
-
-            <TimeTrackerRecorder
-              clientsData={clients}
-              selectedClient={selectedClient}
-              setSelectedClient={(client) =>
-                dispatch(setSelectedClient(client))
-              }
-              selectedTask={selectedTask}
-              selectTask={selectTask}
-              setSelectedTask={(task) => dispatch(setSelectedTask(task))}
-              selectedProject={selectedProject}
-              setSelectedProject={(project) =>
-                dispatch(setSelectedProject(project))
-              }
-              selectedTaskGroup={selectedTaskGroup}
-              setSelectedTaskGroup={(taskGroup) =>
-                dispatch(setSelectedTaskGroup(taskGroup))
-              }
-            />
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h1>DASHBOARD</h1>
+              </div>
+              <div>
+                <TimeTrackerRecorder
+                  clientsData={clients}
+                  selectedClient={selectedClient}
+                  setSelectedClient={(client) =>
+                    dispatch(setSelectedClient(client))
+                  }
+                  selectedTask={selectedTask}
+                  selectTask={selectTask}
+                  setSelectedTask={(task) => dispatch(setSelectedTask(task))}
+                  selectedProject={selectedProject}
+                  setSelectedProject={(project) =>
+                    dispatch(setSelectedProject(project))
+                  }
+                  selectedTaskGroup={selectedTaskGroup}
+                  setSelectedTaskGroup={(taskGroup) =>
+                    dispatch(setSelectedTaskGroup(taskGroup))
+                  }
+                />
+              </div>
+            </div>
 
             <Timer
               selectedTask={selectedTask}

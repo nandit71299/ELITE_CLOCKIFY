@@ -73,15 +73,6 @@ function ViewClients() {
       dataIndex: "name",
       key: "name",
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          {/* You could add other action buttons like Edit here */}
-        </Space>
-      ),
-    },
   ];
 
   return (
@@ -96,14 +87,17 @@ function ViewClients() {
       />
       {/* Show delete button only when there are selected rows */}
       {selectedRowKeys.length > 0 && (
-        <Button
-          type="danger"
-          icon={<DeleteOutlined />}
-          onClick={handleDelete}
-          style={{ marginTop: 16 }}
-        >
-          Delete Selected Clients
-        </Button>
+        <div>
+          <Button
+            color="danger"
+            variant="solid"
+            icon={<DeleteOutlined />}
+            onClick={handleDelete}
+            style={{ marginTop: 16 }}
+          >
+            Delete Selected Clients
+          </Button>
+        </div>
       )}
     </div>
   );

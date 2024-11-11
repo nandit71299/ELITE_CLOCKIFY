@@ -21,36 +21,29 @@ function TimeTrackerRecorder({
   const [isProjectPickerVisible, setIsProjectPickerVisible] = useState(false);
 
   return (
-    <div>
-      <div className="row w-100 d-flex align-items-center">
-        <div className="col-10">
-          <form action="">
-            <input type="text" name="" id="" className="form-control" />
-          </form>
+    <div className="d-flex align-items-end justify-content-end">
+      <div className=" position-relative">
+        <div
+          className="text-primary"
+          onClick={() => setIsProjectPickerVisible(!isProjectPickerVisible)}
+          style={{ cursor: "pointer" }}
+        >
+          + Project
         </div>
-        <div className="col-2 position-relative">
-          <div
-            className="text-primary"
-            onClick={() => setIsProjectPickerVisible(!isProjectPickerVisible)}
-            style={{ cursor: "pointer" }}
-          >
-            + Project
-          </div>
-          {isProjectPickerVisible && (
-            <ProjectPicker
-              clientsData={clientsData} // Pass Redux clients data to ProjectPicker
-              selectedClient={selectedClient}
-              setSelectedClient={setSelectedClient}
-              selectedTask={selectedTask}
-              selectTask={selectTask}
-              setSelectedTask={setSelectedTask}
-              selectedProject={selectedProject}
-              setSelectedProject={setSelectedProject}
-              selectedTaskGroup={selectedTaskGroup}
-              setSelectedTaskGroup={setSelectedTaskGroup}
-            />
-          )}
-        </div>
+        {isProjectPickerVisible && (
+          <ProjectPicker
+            clientsData={clientsData} // Pass Redux clients data to ProjectPicker
+            selectedClient={selectedClient}
+            setSelectedClient={setSelectedClient}
+            selectedTask={selectedTask}
+            selectTask={selectTask}
+            setSelectedTask={setSelectedTask}
+            selectedProject={selectedProject}
+            setSelectedProject={setSelectedProject}
+            selectedTaskGroup={selectedTaskGroup}
+            setSelectedTaskGroup={setSelectedTaskGroup}
+          />
+        )}
       </div>
     </div>
   );

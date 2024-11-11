@@ -147,7 +147,8 @@ function ViewTasks() {
       {/* Show delete button only when there are selected rows */}
       {selectedRowKeys.length > 0 && (
         <Button
-          type="danger"
+          color="danger"
+          variant="solid"
           icon={<DeleteOutlined />}
           onClick={handleDelete}
           style={{ marginTop: 16 }}
